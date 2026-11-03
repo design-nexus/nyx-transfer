@@ -1045,11 +1045,19 @@ mod tests {
             .stderr(Stdio::null())
             .spawn()
             .unwrap();
-        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-        let scanned = std::process::Command::new("ssh-keyscan")
-            .args(["-T", "5", "-p", &port.to_string(), "127.0.0.1"])
-            .output()
-            .unwrap();
+        // The server generates its host key before it answers; on a slow machine that
+        // takes longer than a fixed wait, and an empty scan fails the host check.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
+        let scanned = loop {
+            let scan = std::process::Command::new("ssh-keyscan")
+                .args(["-T", "5", "-p", &port.to_string(), "127.0.0.1"])
+                .output()
+                .unwrap();
+            if !scan.stdout.is_empty() || std::time::Instant::now() > deadline {
+                break scan;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        };
         let known = root.join("known_hosts");
         std::fs::write(&known, scanned.stdout).unwrap();
         let profile = ConnectionProfile {
