@@ -160,7 +160,6 @@ fn build(app: &gtk::Application) {
     );
     let (sender, receiver) = std::sync::mpsc::channel();
     let root = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    root.add_css_class("window-frame");
     // One top bar: the app and its tabs, then the copy, connection and search actions.
     let header = nyx_ui::chrome::app_header(&window, "folder-remote-symbolic", "Transfer");
     let toolbar = header.end.clone();
@@ -213,7 +212,6 @@ fn build(app: &gtk::Application) {
     search_button.set_tooltip_text(Some("Search the active pane (Ctrl+F)"));
     toolbar.append(&search_button);
     toolbar.append(&nyx_ui::chrome::settings_button(settings::open));
-    root.append(&header.root);
     // Two equal panes with a gap between them for the copy buttons.
     let browser = gtk::Box::new(gtk::Orientation::Horizontal, COPY_GAP);
     browser.add_css_class("transfer-browser");
@@ -226,6 +224,11 @@ fn build(app: &gtk::Application) {
     browser.append(&right_ui);
     let browser_overlay = gtk::Overlay::new();
     browser_overlay.set_child(Some(&browser));
+    // The panes' box is homogeneous, so the line between them sits over the gap.
+    let pane_line = nyx_ui::frame::pane_line(gtk::Orientation::Vertical);
+    pane_line.set_halign(gtk::Align::Center);
+    pane_line.set_can_target(false);
+    browser_overlay.add_overlay(&pane_line);
     browser_overlay.add_overlay(&copy_column);
     root.append(&browser_overlay);
     let queue_header = gtk::Box::new(gtk::Orientation::Horizontal, 8);
@@ -268,9 +271,9 @@ fn build(app: &gtk::Application) {
     queue_revealer.set_reveal_child(false);
     queue_revealer.set_child(Some(&queue_scroll));
     root.append(&queue_revealer);
-    let overlay = gtk::Overlay::new();
-    overlay.set_child(Some(&root));
-    window.set_child(Some(&overlay));
+    let frame = nyx_ui::frame::AppFrame::new(&header.root);
+    frame.set_page(&root);
+    let overlay = frame.install(&window);
     settings::attach(&overlay, &window);
     let panes = vec![left, right];
     let first_tab = TabSnapshot::from_panes(&panes);
