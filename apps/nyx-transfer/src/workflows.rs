@@ -78,121 +78,38 @@ fn patterns(view: &gtk::TextView) -> Vec<String> {
         .collect()
 }
 
-pub(super) fn manager(parent: &gtk::ApplicationWindow, state: Rc<RefCell<State>>) {
-    let workflows = match store::load_workflows() {
-        Ok(values) => values,
-        Err(e) => {
-            state.borrow().status.set_text(&e.to_string());
+/// Delete a saved workflow, after asking.
+pub(super) fn delete(state: &Rc<RefCell<State>>, id: String) {
+    let window = state.borrow().window.clone();
+    let s = state.clone();
+    glib::spawn_future_local(async move {
+        let prompt = gtk::AlertDialog::builder()
+            .message("Delete this workflow?")
+            .detail("Queued runs of this workflow will stop. Transfer history is retained.")
+            .buttons(["Cancel", "Delete"])
+            .cancel_button(0)
+            .default_button(0)
+            .build();
+        if prompt.choose_future(Some(&window)).await != Ok(1) {
             return;
         }
-    };
-    let window = gtk::Window::builder()
-        .title("Workflows")
-        .transient_for(parent)
-        .modal(true)
-        .default_width(500)
-        .default_height(440)
-        .build();
-    window.add_css_class("transfer-window");
-    window.add_css_class("transfer-dialog");
-    let root = gtk::Box::new(gtk::Orientation::Vertical, 8);
-    root.set_margin_top(16);
-    root.set_margin_bottom(16);
-    root.set_margin_start(16);
-    root.set_margin_end(16);
-    let intro = gtk::Label::new(Some("Saved folder synchronization jobs"));
-    intro.set_xalign(0.0);
-    root.append(&intro);
-    let list = gtk::ListBox::new();
-    list.set_selection_mode(gtk::SelectionMode::Single);
-    for workflow in &workflows {
-        let row = gtk::ListBoxRow::new();
-        row.set_widget_name(&workflow.id);
-        let label = gtk::Label::new(Some(&format!("{} · {:?}", workflow.name, workflow.mode)));
-        label.set_xalign(0.0);
-        label.set_margin_top(8);
-        label.set_margin_bottom(8);
-        row.set_child(Some(&label));
-        list.append(&row);
-    }
-    root.append(
-        &gtk::ScrolledWindow::builder()
-            .child(&list)
-            .vexpand(true)
-            .build(),
-    );
-    let actions = gtk::Box::new(gtk::Orientation::Horizontal, 8);
-    let create = gtk::Button::with_label("New from panes");
-    let open = gtk::Button::with_label("Open");
-    let delete = gtk::Button::with_label("Delete");
-    actions.append(&create);
-    actions.append(&open);
-    actions.append(&delete);
-    root.append(&actions);
-    window.set_child(Some(&root));
-    {
-        let parent = parent.clone();
-        let s = state.clone();
-        let window = window.clone();
-        create.connect_clicked(move |_| {
-            window.close();
-            editor(&parent, s.clone(), None);
-        });
-    }
-    {
-        let parent = parent.clone();
-        let s = state.clone();
-        let window = window.clone();
-        let list = list.clone();
-        open.connect_clicked(move |_| {
-            let Some(row) = list.selected_row() else {
-                return;
-            };
-            match store::get_workflow(row.widget_name().as_str()) {
-                Ok(Some(workflow)) => {
-                    window.close();
-                    editor(&parent, s.clone(), Some(workflow));
-                }
-                Ok(None) => s.borrow().status.set_text("Workflow no longer exists."),
-                Err(e) => s.borrow().status.set_text(&e.to_string()),
+        match store::delete_workflow(&id) {
+            Ok(()) => {
+                reload(&s);
+                notify(&s, "Workflow deleted.");
             }
-        });
+            Err(e) => notify(&s, &e.to_string()),
+        }
+    });
+}
+
+/// Read the saved workflows again and show them in the sidebar.
+fn reload(state: &Rc<RefCell<State>>) {
+    match store::load_workflows() {
+        Ok(saved) => state.borrow_mut().workflows = saved,
+        Err(e) => notify(state, &e.to_string()),
     }
-    {
-        let list = list.clone();
-        let window = window.clone();
-        let s = state.clone();
-        delete.connect_clicked(move |_| {
-            let Some(row) = list.selected_row() else {
-                return;
-            };
-            let id = row.widget_name().to_string();
-            let list = list.clone();
-            let window = window.clone();
-            let s = s.clone();
-            glib::spawn_future_local(async move {
-                let prompt = gtk::AlertDialog::builder()
-                    .message("Delete this workflow?")
-                    .detail("Queued runs of this workflow will stop. Transfer history is retained.")
-                    .buttons(["Cancel", "Delete"])
-                    .cancel_button(0)
-                    .default_button(0)
-                    .build();
-                if prompt.choose_future(Some(&window)).await != Ok(1) {
-                    return;
-                }
-                match store::delete_workflow(&id) {
-                    Ok(()) => {
-                        list.remove(&row);
-                        s.borrow().status.set_text("Workflow deleted.");
-                    }
-                    Err(e) => s.borrow().status.set_text(&e.to_string()),
-                }
-            });
-        });
-    }
-    dismissible_dialog(&window, "Close");
-    window.present();
+    places::render(state);
 }
 
 fn text_area(root: &gtk::Box, label: &str, initial: &[String]) -> gtk::TextView {
@@ -211,7 +128,7 @@ fn text_area(root: &gtk::Box, label: &str, initial: &[String]) -> gtk::TextView 
     view
 }
 
-fn editor(parent: &gtk::ApplicationWindow, state: Rc<RefCell<State>>, saved: Option<SyncWorkflow>) {
+pub(super) fn editor(parent: &gtk::ApplicationWindow, state: Rc<RefCell<State>>, saved: Option<SyncWorkflow>) {
     if let Some(existing) = &state.borrow().workflow_dialog {
         existing.window.present();
         return;
@@ -391,15 +308,18 @@ fn editor(parent: &gtk::ApplicationWindow, state: Rc<RefCell<State>>, saved: Opt
             };
             match store::save_workflow(&candidate) {
                 Ok(saved) => {
-                    let mut state = s.borrow_mut();
-                    let dialog = state.workflow_dialog.as_mut().unwrap();
-                    dialog.workflow = Some(saved);
-                    dialog.preview = None;
-                    dialog.queue.set_sensitive(false);
-                    dialog.report.buffer().set_text("");
-                    dialog
-                        .status
-                        .set_text("Saved. Preview the workflow before queueing.");
+                    {
+                        let mut state = s.borrow_mut();
+                        let dialog = state.workflow_dialog.as_mut().unwrap();
+                        dialog.workflow = Some(saved);
+                        dialog.preview = None;
+                        dialog.queue.set_sensitive(false);
+                        dialog.report.buffer().set_text("");
+                        dialog
+                            .status
+                            .set_text("Saved. Preview the workflow before queueing.");
+                    }
+                    reload(&s);
                 }
                 Err(e) => s
                     .borrow()

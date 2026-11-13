@@ -1,31 +1,43 @@
-/* Transfer on Nyx 2.0: only Transfer's own parts. One surface: the header, the two
-   panes and the queue share the window's background; the panes are cards, and
-   spacing, not lines, separates the rest. Buttons, inputs, rows and dialogs come
-   from the shared sheets. */
+/* Transfer on Nyx 2.0: only Transfer's own parts. The look follows
+   nyx-design/mockups/revamp (Transfer, option A "Two panes, tidied"). Buttons, inputs,
+   the sidebar's rows and headings, menus and dialogs come from the shared sheets. */
 
 /* ---------- Header and tabs ---------- */
 
-window.transfer-window .app-header button.square-button,
-window.transfer-window .app-header menubutton.square-button > button {
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: @theme_dim_text;
+window.transfer-window .app-header button.header-action {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: @field;
+  box-shadow: inset 0 0 0 1px @hairline;
+  font-weight: 600;
 }
 
-window.transfer-window .app-header button.square-button:hover {
-  background: @row_hover;
-  color: @theme_text;
+window.transfer-window .app-header button.header-action + button.header-action {
+  margin-left: 6px;
+}
+
+window.transfer-window .app-header button.header-action:hover {
+  background: mix(@field, @theme_text, 0.06);
+}
+
+window.transfer-window .app-header button.header-action image {
+  -gtk-icon-size: 15px;
+}
+
+window.transfer-window .app-header button.header-action image.chevron {
+  -gtk-icon-size: 12px;
+  color: @theme_dim_text;
+  margin-left: -2px;
 }
 
 window.transfer-window .transfer-tabs {
-  padding: 0 8px;
+  padding: 0 4px;
 }
 
-/* Tabs: compact pills, quiet until active; the active one in the hover tone. */
 window.transfer-window .transfer-tab {
-  margin: 0 2px;
-  padding: 0 4px 0 2px;
+  margin: 0 1px;
+  padding: 0 4px 0 0;
   border-radius: var(--nyx-radius-small);
 }
 
@@ -38,16 +50,24 @@ window.transfer-window .transfer-tab.active {
 }
 
 window.transfer-window .transfer-tab > button {
-  min-height: 26px;
-  padding: 0 8px 0 10px;
+  min-height: 28px;
+  padding: 0 6px 0 10px;
   border-color: transparent;
   background: transparent;
-  font-size: 12.5px;
   color: @theme_dim_text;
+}
+
+window.transfer-window .transfer-tab > button image {
+  -gtk-icon-size: 14px;
+  color: @theme_text_tertiary;
 }
 
 window.transfer-window .transfer-tab.active > button {
   color: @theme_text;
+}
+
+window.transfer-window .transfer-tab.active > button image {
+  color: @theme_accent;
 }
 
 window.transfer-window .transfer-tab > button.tab-close,
@@ -61,10 +81,15 @@ window.transfer-window button.tab-add {
   color: @theme_text_tertiary;
 }
 
+window.transfer-window .transfer-tab > button.tab-close image {
+  -gtk-icon-size: 12px;
+}
+
 window.transfer-window button.tab-add {
-  min-width: 26px;
-  min-height: 26px;
+  min-width: 28px;
+  min-height: 28px;
   margin-left: 2px;
+  color: @theme_dim_text;
 }
 
 window.transfer-window .transfer-tab > button.tab-close:hover,
@@ -73,205 +98,402 @@ window.transfer-window button.tab-add:hover {
   color: @theme_text;
 }
 
+/* ---------- Sidebar ---------- */
+
+.settings-navigation .nav-sub {
+  color: @theme_text_tertiary;
+  font-size: 0.846em;
+}
+
+.settings-navigation button.nav-add {
+  color: @theme_text_tertiary;
+}
+
+/* The icon rail's mark where a group starts: a short bar in its colour. */
+.settings-navigation separator.nav-divider {
+  margin: 8px 14px 6px;
+  min-height: 2px;
+  border-radius: 1px;
+  background: @theme_divider;
+}
+
+.transfer-sidebar .nav-foot {
+  padding: 10px 6px 4px 8px;
+}
+
+.transfer-sidebar .nav-foot-icon {
+  -gtk-icon-size: 13px;
+  margin-top: 1px;
+  color: @theme_success;
+}
+
+.transfer-sidebar .nav-foot-text {
+  color: @theme_text_tertiary;
+  font-size: 0.846em;
+}
+
 /* ---------- Panes ---------- */
 
-window.transfer-window .transfer-browser {
-  padding: 4px 12px 0;
-}
-
 window.transfer-window .transfer-pane {
-  min-width: 280px;
+  min-width: 300px;
 }
 
-/* Copy between the panes: two wide tinted buttons centred in the gap. */
-window.transfer-window button.copy-button {
-  min-width: 52px;
-  min-height: 36px;
-  padding: 0;
-  border: none;
-  border-radius: var(--nyx-radius-small);
-  background: mix(@theme_bg, @theme_accent, 0.16);
-  color: @theme_accent;
-  transition: background 120ms ease-out, color 120ms ease-out;
+window.transfer-window .transfer-pane.second {
+  border-left: 1px solid @sheet_line;
 }
 
-window.transfer-window button.copy-button:hover {
-  background: @theme_accent;
-  color: @theme_on_accent;
+/* The pane you're in: a line in the accent across its top. */
+window.transfer-window .transfer-pane.focus {
+  box-shadow: inset 0 2px 0 alpha(@theme_accent, 0.8);
 }
 
-window.transfer-window button.copy-button:disabled {
-  background: @field;
-  color: @theme_text_tertiary;
-}
-
-window.transfer-window .pane-controls {
+window.transfer-window .pane-head {
   min-height: 46px;
-  padding: 0 8px;
+  padding: 0 8px 0 10px;
 }
 
-window.transfer-window .pane-controls dropdown.location-selector > button {
-  min-width: 100px;
-  padding: 0 8px;
-}
-
-window.transfer-window .pane-controls button.square-button,
-window.transfer-window .pane-path-row button.square-button,
-window.transfer-window .pane-controls menubutton.square-button > button {
-  border-color: transparent;
-  background: transparent;
-  color: @theme_dim_text;
-}
-
-window.transfer-window .pane-controls button.square-button:hover,
-window.transfer-window .pane-path-row button.square-button:hover,
-window.transfer-window .pane-controls menubutton.square-button > button:hover {
-  background: @row_hover;
-  color: @theme_text;
-}
-
-window.transfer-window .transfer-breadcrumb {
-  min-height: 32px;
-  padding: 0 2px;
-}
-
-window.transfer-window .transfer-breadcrumb button {
+window.transfer-window .pane-head button.icon-button {
+  min-width: 28px;
   min-height: 28px;
-  padding: 0 6px;
-  border-color: transparent;
-  background: transparent;
-  color: @theme_dim_text;
+  padding: 0;
 }
 
-window.transfer-window .transfer-breadcrumb button:hover {
-  background: @row_hover;
-  color: @theme_text;
-}
-
-window.transfer-window .pane-path-row {
-  min-height: 40px;
+window.transfer-window button.place-button {
+  min-height: 30px;
   padding: 0 8px;
+  border-radius: var(--nyx-radius-small);
+  background: transparent;
 }
 
-window.transfer-window .pane-search-row {
-  padding: 4px 8px;
+window.transfer-window .transfer-pane.focus button.place-button {
+  background: @field;
+  box-shadow: inset 0 0 0 1px @hairline;
 }
 
-window.transfer-window .pane-path-row entry,
-window.transfer-window .pane-search-row entry {
-  margin: 0;
+window.transfer-window button.place-button:hover {
+  background: @row_hover;
 }
 
-window.transfer-window .view-options {
-  padding: 10px;
-  min-width: 190px;
+window.transfer-window .place-icon {
+  -gtk-icon-size: 16px;
+  color: @theme_accent;
 }
 
-window.transfer-window .view-options > label {
-  color: @theme_dim_text;
-}
-
-window.transfer-window .view-options dropdown > button {
-  min-width: 0;
-}
-
-/* Column headings: quiet labels. */
-window.transfer-window .file-headings {
-  min-height: 28px;
-  padding: 0 16px;
-  font-size: 11px;
+window.transfer-window .place-name {
   font-weight: 600;
-  letter-spacing: 0.06em;
+}
+
+window.transfer-window .place-proto {
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.77em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: @theme_success;
+  background: alpha(@theme_success, 0.14);
+}
+
+window.transfer-window button.place-button image.chevron {
+  -gtk-icon-size: 12px;
   color: @theme_text_tertiary;
+}
+
+window.transfer-window .pane-path {
+  padding: 0 12px 6px;
+}
+
+window.transfer-window .pane-crumbs button.crumb {
+  min-height: 24px;
+  padding: 0 4px;
+  border-radius: var(--nyx-radius-small);
+  background: transparent;
+  color: @theme_dim_text;
+  font-weight: 400;
+}
+
+window.transfer-window .pane-crumbs button.crumb:hover {
+  background: @row_hover;
+  color: @theme_text;
+}
+
+window.transfer-window .pane-crumbs button.crumb.last {
+  color: @theme_text;
+  font-weight: 500;
+}
+
+window.transfer-window .pane-crumbs .crumb-sep {
+  -gtk-icon-size: 12px;
+  color: @theme_text_tertiary;
+}
+
+window.transfer-window entry.pane-path-entry {
+  min-height: 26px;
+  margin: 0 2px;
+}
+
+window.transfer-window .pane-filter {
+  padding: 0 10px 8px;
+}
+
+/* Column headings: quiet labels between two lines. */
+window.transfer-window .file-heads {
+  min-height: 28px;
+  padding: 0 16px 0 40px;
+  border-top: 1px solid @sheet_line;
+  border-bottom: 1px solid @sheet_line;
+}
+
+window.transfer-window button.file-head {
+  min-height: 26px;
+  padding: 0;
+  background: transparent;
+  font-size: 0.846em;
+  font-weight: 600;
+  color: @theme_text_tertiary;
+}
+
+window.transfer-window button.file-head:hover {
+  background: transparent;
+  color: @theme_dim_text;
+}
+
+window.transfer-window .sort-mark {
+  -gtk-icon-size: 11px;
+}
+
+window.transfer-window .size-column {
+  min-width: 74px;
+}
+
+window.transfer-window .modified-column {
+  min-width: 86px;
 }
 
 window.transfer-window list.file-list {
   background: transparent;
-  padding: 0 6px 6px;
+  padding: 4px 6px;
 }
 
-window.transfer-window .file-list row {
-  min-height: 44px;
-  padding: 4px 10px;
+window.transfer-window .file-list > row {
+  min-height: 34px;
+  padding: 0 10px;
   border-radius: var(--nyx-radius-small);
 }
 
-window.transfer-window .file-list row .dim-label {
-  font-size: 12px;
-  font-feature-settings: "tnum";
-}
-
-/* ---------- Queue ---------- */
-
-window.transfer-window .queue-head {
-  min-height: 44px;
-  padding: 0 16px;
+window.transfer-window .file-icon {
+  -gtk-icon-size: 18px;
   color: @theme_dim_text;
 }
 
-window.transfer-window .queue-head > label.dim-label:first-child {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+window.transfer-window .file-icon.folder {
+  color: #4b8fe0;
+}
+
+window.transfer-window .file-size,
+window.transfer-window .file-modified {
+  color: @theme_text_tertiary;
+  font-size: 0.923em;
+  font-feature-settings: "tnum";
+}
+
+window.transfer-window .pane-foot {
+  min-height: 40px;
+  padding: 0 16px;
+  border-top: 1px solid @sheet_line;
+}
+
+window.transfer-window .pane-info {
+  color: @theme_text_tertiary;
+  font-size: 0.923em;
+}
+
+window.transfer-window .pane-info.error {
+  color: @theme_danger;
+}
+
+/* With files selected: what's selected, and the button that copies it across. */
+window.transfer-window .selection-bar {
+  margin: 6px 8px 8px;
+  padding: 5px 5px 5px 12px;
+  border-radius: var(--nyx-radius-card);
+  background: mix(@theme_card, @theme_accent, 0.10);
+  box-shadow: inset 0 0 0 1px alpha(@theme_accent, 0.30);
+}
+
+window.transfer-window .selection-text {
+  color: @theme_dim_text;
+}
+
+window.transfer-window .selection-bar button {
+  min-height: 28px;
+}
+
+window.transfer-window button.copy-to image {
+  -gtk-icon-size: 14px;
+}
+
+window.transfer-window button.copy-to image.copy-arrow {
+  -gtk-icon-size: 13px;
+}
+
+window.transfer-window image.flip {
+  -gtk-icon-transform: rotate(180deg);
+}
+
+/* ---------- Transfers: the bar and the drawer ---------- */
+
+window.transfer-window .transfer-queue {
+  border-top: 1px solid @sheet_line;
+}
+
+window.transfer-window .queue-bar {
+  min-height: 44px;
+  padding: 0 8px 0 14px;
+}
+
+window.transfer-window .queue-bar-icon {
+  -gtk-icon-size: 16px;
+  color: @theme_accent;
+}
+
+window.transfer-window .queue-bar-icon.bad {
+  color: @theme_danger;
+}
+
+window.transfer-window .queue-bar-icon.dim {
   color: @theme_text_tertiary;
 }
 
-window.transfer-window .queue-head button.square-button {
-  border-color: transparent;
-  background: transparent;
+window.transfer-window .queue-bar-title {
   color: @theme_dim_text;
 }
 
-window.transfer-window .queue-head button.square-button:hover {
-  background: @row_hover;
-  color: @theme_text;
+window.transfer-window progressbar.queue-bar-progress > trough {
+  min-width: 140px;
 }
 
-window.transfer-window .transfer-status {
-  margin-left: 6px;
-  font-size: 11.5px;
-  color: @theme_dim_text;
+window.transfer-window .transfer-queue.narrow progressbar.queue-bar-progress > trough {
+  min-width: 80px;
+}
+
+window.transfer-window .queue-meta {
+  color: @theme_text_tertiary;
+  font-size: 0.923em;
   font-feature-settings: "tnum";
 }
 
-window.transfer-window .transfer-queue-view {
-  margin: 0 12px 10px;
-  border-radius: var(--nyx-radius-card);
-  background: @theme_card;
+window.transfer-window .queue-more {
+  color: @theme_text_tertiary;
+  font-size: 0.923em;
+  font-weight: 500;
+}
+
+window.transfer-window .queue-more.bad {
+  color: @theme_danger;
+}
+
+window.transfer-window button.queue-toggle {
+  min-height: 30px;
+}
+
+window.transfer-window button.queue-toggle image {
+  -gtk-icon-size: 13px;
+}
+
+window.transfer-window .queue-drawer {
+  padding: 0 6px 6px;
+  background: mix(@theme_bg, @theme_text, 0.015);
+}
+
+window.transfer-window .queue-head {
+  min-height: 44px;
+  padding: 0 4px 0 10px;
+}
+
+window.transfer-window .queue-title {
+  font-weight: 600;
+}
+
+window.transfer-window .queue-counts {
+  color: @theme_text_tertiary;
+  font-size: 0.923em;
 }
 
 window.transfer-window .queue-empty {
-  padding: 12px 14px;
+  padding: 10px 10px 14px;
   color: @theme_dim_text;
 }
 
-window.transfer-window .job-row {
-  padding: 8px 14px;
+window.transfer-window .queue-row {
+  padding: 8px 10px;
+  border-top: 1px solid @hairline;
 }
 
-window.transfer-window .job-row progressbar trough {
-  min-height: 3px;
-  border-radius: 999px;
-  background: @track;
-  border: none;
+window.transfer-window .queue-list > .queue-row:first-child {
+  border-top: none;
 }
 
-window.transfer-window .job-row progressbar progress {
-  min-height: 3px;
-  border-radius: 999px;
-  background: @theme_accent;
+window.transfer-window .queue-icon {
+  -gtk-icon-size: 18px;
+  color: @theme_accent;
 }
 
-/* ---------- Square controls ---------- */
+window.transfer-window .queue-row.fail .queue-icon {
+  color: @theme_danger;
+}
 
-window.transfer-window button.square-button,
-window.transfer-window menubutton.square-button > button {
-  min-width: 32px;
-  min-height: 32px;
+window.transfer-window .queue-row.done .queue-icon {
+  color: @theme_text_tertiary;
+}
+
+window.transfer-window .queue-name {
+  font-weight: 600;
+}
+
+window.transfer-window .queue-route {
+  color: @theme_text_tertiary;
+  font-size: 0.923em;
+}
+
+window.transfer-window progressbar.queue-progress > trough {
+  min-width: 420px;
+}
+
+window.transfer-window .queue-row .queue-meta {
+  color: @theme_dim_text;
+}
+
+window.transfer-window .queue-row.fail .queue-meta {
+  color: @theme_danger;
+}
+
+window.transfer-window .queue-row.fail progressbar > trough > progress {
+  background: @theme_danger;
+}
+
+window.transfer-window .queue-row.wait .queue-meta,
+window.transfer-window .queue-row.done .queue-meta {
+  color: @theme_text_tertiary;
+}
+
+window.transfer-window .queue-row button.icon-button {
+  min-width: 28px;
+  min-height: 28px;
   padding: 0;
-  margin: 0;
-  border-radius: var(--nyx-radius-small);
 }
+
+window.transfer-window .queue-row button.retry {
+  min-height: 28px;
+  box-shadow: inset 0 0 0 1px @hairline;
+}
+
+window.transfer-window .done-mark {
+  -gtk-icon-size: 18px;
+  margin-right: 6px;
+  color: @theme_success;
+}
+
+/* ---------- Dialogs ---------- */
 
 window.transfer-dialog dropdown > button {
   min-width: 0;

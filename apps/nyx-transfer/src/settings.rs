@@ -21,6 +21,8 @@ pub struct Prefs {
     /// transfer service reads it from this file.
     pub retries: u32,
     pub concurrent_transfers: u32,
+    /// The sidebar shows icons only (Ctrl+B).
+    pub sidebar_collapsed: bool,
 }
 
 impl Default for Prefs {
@@ -34,6 +36,7 @@ impl Default for Prefs {
             sort: "name".into(),
             retries: 2,
             concurrent_transfers: 2,
+            sidebar_collapsed: false,
         }
     }
 }
@@ -66,6 +69,7 @@ pub const SHORTCUTS: &[(&[&str], &str)] = &[
     (&["Ctrl", "T"], "New tab"),
     (&["Ctrl", "W"], "Close tab"),
     (&["Ctrl", "Tab"], "Next tab"),
+    (&["Ctrl", "B"], "Show or hide the sidebar"),
     (&["Ctrl", "F"], "Filter the active pane"),
     (&["Ctrl", "L"], "Edit the location"),
     (&["Alt", "←"], "Back"),
