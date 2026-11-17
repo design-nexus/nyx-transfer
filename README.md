@@ -42,6 +42,8 @@ private bus, with no personal accounts.
 
 ## Install
 
+On NyxOS, install Transfer from the Store or with `nyx install nyx-transfer`. On Omarchy:
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/design-nexus/nyx-transfer/main/install.sh | bash
 ```
